@@ -14,24 +14,7 @@ adk_agents:  comic_story_creator_v1: # リストの要素ではなく、キー�
     temperature: 0.7 # run_agent.py で読み込むために追加
     max_tokens: 1000 # run_agent.py で読み込むために追加
 
-default_agent_id: "simple_story_agent_v1"
-
 agents:
-  - id: "simple_story_agent_v1"
-    class: "agents.story_agent.SimpleStoryAgent"
-    config:
-      use_adk: false
-      use_llm: true
-      story_templates:
-        default:
-          setup: "平和な世界で暮らしていた主人公は、ある日突然、不思議な出来事に巻き込まれます。"
-          conflict: "{genre}の要素を活かしながら、仲間たちと共に冒険を繰り広げ、ライバルとの対立や困難な課題に直面します。"
-          resolution: "知恵と勇気で困難を乗り越え、真の目的を達成します。"
-        adventure:
-          setup: "冒険心あふれる主人公は、新たな大陸への旅路に出発します。"
-          conflict: "{genre}の世界で、未知の敵と戦いながら、伝説の宝を探し求めます。"
-          resolution: "多くの仲間と出会い、最後は皆で力を合わせて目標を達成します。"
-
   # character_agent_v1 と plot_optimizer_agent_v1 を agents リストに移動
   - id: "character_agent_v1"
     class: "agents.character_agent.CharacterAgent" # 仮のクラスパス、実際のクラス名に修正してください

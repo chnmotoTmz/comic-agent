@@ -34,13 +34,14 @@ def generate_story_for_comic(genre: str, llm_model_name: str, temperature: float
 ユーザーから指定されたジャンルに基づいて、漫画に適した物語の構造を考案してください。
 物語の構造は以下のキーを持つJSONオブジェクトとして返してください:
 - title: str (物語のタイトル)
-- characters: list[dict] (登場人物のリスト、各辞書は {"name": "キャラ名", "description": "簡単な説明"} を持つ)
+- characters: list[dict] (登場人物のリスト、各辞書は {"name": "キャラ名", "role": "役割", "description": "簡単な説明"} を持つ)
 - plot: dict (物語のプロット、{"setup": "導入", "conflict": "葛藤・展開", "resolution": "結末"} を持つ)
-- themes: list[str] (物語の主要なテーマのリスト)
+- themes: list (物語の主要なテーマのリスト。このフィールドは常に空のリスト `[]` としてください。)
 """
     user_prompt = f"ジャンル： {genre}"
 
-    full_prompt = f"{system_prompt}\\n\\nユーザーの指示:\\n{user_prompt}\\n\\nJSON形式で物語の構造を生成してください。"
+    # Ensure the prompt clearly asks for the role field and empty themes list.
+    full_prompt = f"{system_prompt}\n\nユーザーの指示:\n{user_prompt}\n\nJSON形式で物語の構造を生成してください。登場人物には必ず`role`フィールドを含めてください。`themes`フィールドは必ず空のリスト `[]` としてください。"
 
     print(f"--- generate_story_for_comic: LLM呼び出し ---")
     print(f"モデル: {llm_model_name}, ジャンル: {genre}")
@@ -90,14 +91,34 @@ if __name__ == '__main__':
     if not os.environ.get("GEMINI_API_KEY"):
         print("テスト実行のため、環境変数 GEMINI_API_KEY を設定してください。")
     else:
-        print("テスト: ファンタジーの物語を生成")
-        fantasy_story = generate_story_for_comic("壮大なファンタジー")
+        print("テスト: ファンタジーの物語を生成 (役割情報を含む)")
+        fantasy_story = generate_story_for_comic(
+            genre="壮大なファンタジー",
+            llm_model_name=os.environ.get("ADK_LLM_MODEL", "gemini-1.5-flash-latest"), # 環境変数またはデフォルト
+            temperature=0.7,
+            max_tokens=1500
+        )
         if fantasy_story:
-            print("\\n生成された物語構造:")
+            print("\n生成された物語構造 (ファンタジー):")
             print(json.dumps(fantasy_story, indent=2, ensure_ascii=False))
+            if fantasy_story.get("characters"):
+                for char in fantasy_story["characters"]:
+                    print(f"  - キャラクター: {char.get('name')}, 役割: {char.get('role')}, 説明: {char.get('description')}")
+            if "themes" in fantasy_story:
+                print(f"  - テーマ (期待値: []): {fantasy_story.get('themes')}")
 
-        print("\\nテスト: SFの物語を生成")
-        sf_story = generate_story_for_comic("宇宙を舞台にしたSFアドベンチャー")
+        print("\nテスト: SFの物語を生成 (役割情報、空のテーマリストを含む)")
+        sf_story = generate_story_for_comic(
+            genre="宇宙を舞台にしたSFアドベンチャー",
+            llm_model_name=os.environ.get("ADK_LLM_MODEL", "gemini-1.5-flash-latest"),
+            temperature=0.7,
+            max_tokens=1500
+        )
         if sf_story:
-            print("\\n生成された物語構造:")
+            print("\n生成された物語構造 (SF):")
             print(json.dumps(sf_story, indent=2, ensure_ascii=False))
+            if sf_story.get("characters"):
+                for char in sf_story["characters"]:
+                    print(f"  - キャラクター: {char.get('name')}, 役割: {char.get('role')}, 説明: {char.get('description')}")
+            if "themes" in sf_story:
+                print(f"  - テーマ (期待値: []): {sf_story.get('themes')}")
