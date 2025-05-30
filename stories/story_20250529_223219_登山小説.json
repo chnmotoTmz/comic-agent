@@ -1,0 +1,37 @@
+{
+  "title": "LLM生成：登山小説の物語",
+  "characters": [
+    {
+      "name": "主人公",
+      "role": "protagonist",
+      "description": "若き冒険者"
+    },
+    {
+      "name": "賢者",
+      "role": "support",
+      "description": "主人公を導く賢者"
+    },
+    {
+      "name": "仮面の人物",
+      "role": "antagonist",
+      "description": "謎めいたライバル"
+    }
+  ],
+  "plot": {
+    "setup": "LLMによって生成された登山小説の導入部分です。",
+    "conflict": "LLMによって生成された登山小説の葛藤部分です。",
+    "resolution": "LLMによって生成された登山小説の解決部分です。"
+  },
+  "themes": [
+    "友情の大切さ",
+    "成長の物語",
+    "正義と真実の追求"
+  ],
+  "genre": "登山小説",
+  "metadata": {
+    "agent_version": "v0.1",
+    "agent_id": "simple_story_agent_v1",
+    "config": "C:\\Users\\motoc\\comic-agent\\config\\agent_config.yaml",
+    "generation_type": "llm"
+  }
+}

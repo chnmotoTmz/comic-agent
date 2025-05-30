@@ -1,0 +1,3 @@
+"""
+Comic Agent tests package
+"""

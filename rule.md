@@ -74,7 +74,7 @@
     *   大文字のスネークケース (大文字、単語間をアンダースコア `_` で区切る) を使用します。
     *   例:
         *   `MAX_OUTPUT_TOKENS = 2048`
-        *   `DEFAULT_MODEL_NAME = "gemini-1.5-pro"`
+        *   `DEFAULT_MODEL_NAME = "gemini-2.0-flash`
         *   `API_REQUEST_TIMEOUT = 60`
 
 ## 4. モジュール構成の指針 (Module Structure Guidelines)
