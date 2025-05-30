@@ -9,6 +9,8 @@ from google.genai.types import Content, Part
 import google.generativeai as genai
 from agents.story_tools import generate_story_for_comic
 import json
+from datetime import datetime
+from pathlib import Path
 
 # 環境変数からAPIキーを読み込む
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -49,6 +51,84 @@ async def call_agent_async(
     print("-" * 20)
     return final_response
 
+# Helper functions for formatting story elements
+def _format_characters_rf(characters: list) -> str:
+    """Formats character list into a string, including their roles."""
+    if not characters:
+        return "登場人物情報なし"
+    return "\n".join([f"- {char.get('name', '名前なし')} (役割: {char.get('role', '役割不明')}): {char.get('description', '詳細なし')}" for char in characters])
+
+def _format_themes_rf(themes: list) -> str:
+    """Formats theme list into a string."""
+    if not themes:
+        return "テーマ情報なし"
+    return "\n".join([f"- {theme}" for theme in themes])
+
+def save_story_artifacts(story_json_str: str, genre: str, config_path: str):
+    """
+    Saves the generated story as JSON and a human-readable text file,
+    including genre and metadata.
+    """
+    try:
+        story_data = json.loads(story_json_str)
+    except json.JSONDecodeError as e:
+        print(f"エラー: Story JSONのパースに失敗しました: {e}")
+        print(f"受信した文字列: {story_json_str}")
+        # Attempt to save even partial/malformed string as text for debugging
+        timestamp_err = datetime.now().strftime("%Y%m%d_%H%M%S")
+        story_dir_err = Path("stories")
+        story_dir_err.mkdir(exist_ok=True)
+        err_filename = f"error_story_{timestamp_err}_{genre.replace(' ', '_').lower()}.txt"
+        err_text_path = story_dir_err / err_filename
+        with open(err_text_path, 'w', encoding='utf-8') as f_err:
+            f_err.write(f"Error parsing JSON. Original string:\n{story_json_str}")
+        print(f"エラーが発生したため、受信した生の文字列を {err_text_path} に保存しました。")
+        return
+
+    # Add genre and metadata
+    story_data['genre'] = genre
+    
+    metadata = {
+        'agent_version': "v1_adk_refactored",
+        'config_path': config_path,
+        'timestamp': datetime.now().strftime("%Y%m%d_%H%M%S"), # Consistent timestamp
+        'generation_type': "adk_agent"
+    }
+    story_data['metadata'] = metadata
+    
+    # Filename generation (timestamp from metadata for consistency if preferred)
+    timestamp = metadata['timestamp'] 
+    story_dir = Path("stories")
+    story_dir.mkdir(exist_ok=True) 
+
+    base_filename = f"story_{timestamp}_{genre.replace(' ', '_').lower()}"
+
+    # Save modified JSON (with genre and metadata)
+    json_path = story_dir / f"{base_filename}.json"
+    with open(json_path, 'w', encoding='utf-8') as f:
+        json.dump(story_data, f, ensure_ascii=False, indent=2)
+    
+    # Generate and save human-readable text version using modified story_data
+    text_story = f"""タイトル：{story_data.get('title', 'タイトルなし')}
+
+登場人物：
+{_format_characters_rf(story_data.get('characters', []))}
+
+あらすじ：
+{story_data.get('plot', {}).get('setup', '導入なし')}
+{story_data.get('plot', {}).get('conflict', '葛藤なし')}
+{story_data.get('plot', {}).get('resolution', '解決なし')}
+
+テーマ：
+{_format_themes_rf(story_data.get('themes', []))}
+"""
+    text_path = story_dir / f"{base_filename}.txt"
+    with open(text_path, 'w', encoding='utf-8') as f:
+        f.write(text_story)
+
+    print(f"\n物語を保存しました:")
+    print(f"  JSON: {json_path}")
+    print(f"  テキスト: {text_path}")
 
 async def main():
     """メインの非同期関数"""
@@ -154,10 +234,19 @@ async def main():
         print(f"  登場人物: {story_json.get('characters', 'N/A')}")
         print(f"  プロット: {story_json.get('plot', 'N/A')}")
         print(f"  テーマ: {story_json.get('themes', 'N/A')}")
+        
+        # Save the story artifacts
+        save_story_artifacts(final_agent_response_str, genre, config_path)
+        
     except json.JSONDecodeError:
         print("\n最終応答はJSON形式ではありませんでした。そのまま表示します。")
-    except TypeError:
+        # Even if not perfect JSON, try to save what we got, identified by genre
+        save_story_artifacts(final_agent_response_str, f"{genre}_partial_output", config_path)
+    except TypeError: # Should be less likely if JSON parsing is robust
         print("\n最終応答の解析中に型エラーが発生しました。")
+        # Try to save what we got
+        save_story_artifacts(final_agent_response_str, f"{genre}_type_error_output", config_path)
+
 
 if __name__ == "__main__":
     asyncio.run(main())
