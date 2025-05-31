@@ -1,0 +1,31 @@
+{
+    "servers": {
+        "redmine": {
+            "type": "stdio",
+            "command": "redmine:",
+            "args": [
+                "{",
+                "type:",
+                "stdio,",
+                "command:",
+                "uvx,",
+                "args:",
+                "[",
+                "--from,",
+                "mcp-redmine==2025.04.09.153531,",
+                "--refresh-package,",
+                "mcp-redmine,",
+                "mcp-redmine",
+                "],",
+                "env:",
+                "{",
+                "REDMINE_URL:",
+                "http://localhost:3000,",
+                "REDMINE_API_KEY:",
+                "6a8cf88d2a4e912477e8f82053ec383850f63572",
+                "}",
+                "},"
+            ]
+        }
+    }
+}
